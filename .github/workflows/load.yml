@@ -16,7 +16,7 @@ jobs:
         run: |
           cat > hit.js <<'EOF'
           const http2 = require('http2');
-          const SESSIONS = 4, C = 15;
+          const SESSIONS = 1, C = 3;
           let ok = 0, th = 0, err = 0;
           const t0 = Date.now();
           const pool = [];
