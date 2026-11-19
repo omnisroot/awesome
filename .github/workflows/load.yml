@@ -24,7 +24,7 @@ jobs:
           function fire() {
             const s = pool[Math.floor(Math.random() * pool.length)];
             let r;
-            try { r = s.request({ ':path': '/api/clans/TANG?cb=' + Math.random().toString(36).slice(2) }); } catch (e) { err++; setTimeout(fire, 150); return; }
+            try { r = s.request({ ':path': '/api/me/export?cb=' + Math.random().toString(36).slice(2), 'cookie': 'sid=Wu7QxoG-b6wSjEN6iCKhBBuya-8UPuiT29s5A-Wo4Gg' }); } catch (e) { err++; setTimeout(fire, 150); return; }
             r.on('response', h => { if (h[':status'] !== 200) th++; });
             r.on('data', () => {});
             r.on('end', () => { ok++; fire(); });
